@@ -1,64 +1,79 @@
-# Requirements - What We're Building
+# Requirements - Daily Task Orchestrator
 
 ## Functional Requirements
 
 ### FR1: Data Collection
-- [ ] Fetch from Gmail API
-- [ ] Fetch from university portal
-- [ ] Fetch from professor websites
-- [ ] Secure authentication
+- [ ] Fetch emails from Gmail
+- [ ] Fetch assignments from university portal
+- [ ] Fetch tasks from professor websites
+- [ ] Handle authentication securely
 
 ### FR2: Data Processing
-- [ ] Parse emails to extract deadlines
-- [ ] Normalize data from multiple sources
-- [ ] Create unified Task objects
-- [ ] Handle malformed data gracefully
+- [ ] Normalize data into Task objects
+- [ ] Extract deadline dates
+- [ ] Extract assignment titles and descriptions
+- [ ] Handle missing/malformed data gracefully
 
 ### FR3: AI Analysis
-- [ ] Call Claude API
-- [ ] Prioritize tasks
-- [ ] Generate schedule
-- [ ] Create summary
+- [ ] Call Claude API with tasks
+- [ ] Get AI-generated priorities
+- [ ] Get AI-generated schedule
+- [ ] Get AI-generated summary
 
-### FR4: User Notification
+### FR4: Notification
 - [ ] Generate formatted email
-- [ ] Send via Gmail SMTP
-- [ ] Include all relevant info
-- [ ] Make it human-readable
+- [ ] Include priority order
+- [ ] Include suggested schedule
+- [ ] Send via Gmail
 
 ### FR5: Automation
-- [ ] Run daily at 9 AM
-- [ ] Deploy to AWS Lambda
+- [ ] Trigger daily at 9 AM
+- [ ] Run on AWS Lambda
 - [ ] Handle errors gracefully
-- [ ] Log execution
+- [ ] Log execution for debugging
 
 ## Non-Functional Requirements
 
-### Code Quality
-- Clean code, no duplication
-- Proper error handling
-- Good naming conventions
-- Clear comments where needed
+### NFR1: Code Quality
+- Clean, readable code
+- Proper separation of concerns
+- No hardcoded values
+- Comprehensive error handling
 
-### Architecture
-- Hexagonal pattern
+### NFR2: Architecture
+- Hexagonal architecture (ports & adapters)
 - Dependency injection
 - Interface-based design
-- Separation of concerns
+- No circular dependencies
 
-### Testing
+### NFR3: Testing
 - Unit tests for all classes
-- Integration tests
+- Integration tests between layers
 - Mock external dependencies
 - >80% code coverage
 
-### Security
+### NFR4: Security
+- Store secrets in AWS Secrets Manager
 - No credentials in code
-- Use environment variables
-- AWS Secrets Manager for prod
-- OAuth2 for authentication
+- Secure OAuth2 flows
+- Validate all external data
 
-### Performance
+### NFR5: Performance
 - Complete execution <1 minute
-- Efficient API calls
-- No unnecessary DB queries
+- Minimal API calls
+- Efficient parsing
+- No unnecessary database queries
+
+### NFR6: Maintainability
+- Clear, up-to-date documentation
+- Commented code for complex logic
+- Proper logging
+- Easy to debug
+
+## Out of Scope (For Now)
+
+- Web dashboard / UI
+- Mobile app
+- Database persistence (beyond in-memory)
+- Multi-user support
+- Analytics/reporting

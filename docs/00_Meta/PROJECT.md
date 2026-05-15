@@ -1,47 +1,58 @@
-# Project Overview - Daily Task Orchestrator
+# Daily Task Orchestrator - Project Overview
 
-## What Is This?
+## What Are We Building?
 
 An automated system that:
-- Fetches tasks from Gmail, university portal, professor websites
-- Analyzes them with Claude AI
-- Sends daily email with prioritized tasks + schedule
+1. **Fetches** assignments from Gmail, university portal, professor websites
+2. **Analyzes** them with Claude AI to prioritize and schedule
+3. **Reports** via daily email what you need to do and when
+
+**Status:** In Development
+**Duration:** 10-12 weeks
+**Time Commitment:** 5-10 hours/week
 
 ## Why This Project?
 
-Learn real software engineering:
-- Clean architecture
-- API integration
-- Testing & deployment
-- Professional Java development
+- Learn real software engineering (not toy projects)
+- Build something useful (actual daily use)
+- Understand system design patterns
+- Practice clean code principles
+- Deploy to production (AWS Lambda)
+- Use AI APIs (Claude)
 
-## Goals
+## Key Features
 
-By end of 12 weeks:
-- [ ] Working system running on AWS Lambda
-- [ ] Daily emails at 9 AM
-- [ ] 100+ unit tests
-- [ ] Production-ready code
-- [ ] Deep understanding of software design
-
-## Current Status
-
-- **Phase:** 1 (Starting)
-- **Progress:** 0%
-- **Next Milestone:** Project compiles, tests pass
+- ✅ Fetch from multiple data sources
+- ✅ Normalize disparate data formats
+- ✅ Prioritize with AI
+- ✅ Send formatted daily email
+- ✅ Run automatically at 9 AM
+- ✅ Track progress over time
 
 ## Technology Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Language | Java 17+ |
-| Build | Maven |
-| Testing | JUnit 5 + Mockito |
-| Logging | SLF4J + Logback |
-| APIs | Gmail, Claude, AWS |
-| Deployment | Lambda |
+- **Language:** Java 17+
+- **Build:** Maven
+- **Testing:** JUnit 5 + Mockito
+- **Logging:** SLF4J + Logback
+- **APIs:** Gmail, Claude, University Portal
+- **Deployment:** AWS Lambda + CloudWatch
 
-## Team
+## Success Criteria
 
-- You: Developer & Learner
-- Me: Guide & Mentor
+By week 12, you'll have:
+- [ ] A working Maven project with clean architecture
+- [ ] Gmail integration (fetch and parse emails)
+- [ ] Claude API integration (AI analysis)
+- [ ] Daily email reports
+- [ ] Running on AWS Lambda (automated 9 AM trigger)
+- [ ] University portal integration (optional but likely)
+- [ ] 50+ unit tests
+- [ ] Complete documentation
+
+## Who This Is For
+
+- Java beginners (have built small programs before)
+- Want to learn software engineering
+- Can commit 5-10 hours/week
+- Comfortable with some frustration (debugging is part of learning)

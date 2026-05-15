@@ -11,10 +11,14 @@
             "id": "35f340e401b4160e",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "03_Code/Phase 4 - Claude API.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Phase 4 - Claude API"
             }
           }
         ]
@@ -178,12 +182,21 @@
   },
   "active": "35f340e401b4160e",
   "lastOpenFiles": [
+    "03_Code/Phase 3 - Data Parsing.md",
+    "03_Code/Phase 2 Step 2 - Gmail Integration.md",
+    "03_Code/Phase 2 Step 1 - Gmail Integration.md",
+    "03_Code/Phase 1 - Project Setup.md",
     "2026-05-15.md",
     "Untitled.canvas",
+    "00_Meta/BUGLOG.md",
+    "00_Meta/ROADMAP.md",
+    "00_Meta/STATE.md",
+    "00_Meta/REQUIREMENTS.md",
+    "00_Meta/PROJECT.md",
+    "00_Meta/Claude.md",
     "05_Resources/External Links.md",
     "04_Debugging/Common Issues.md",
     "03_Code/Code Snippets.md",
-    "03_Code/Phase 1 - Project Setup.md",
     "02_Learning Topics/Software Engineering/SOLID Principles.md",
     "02_Learning Topics/APIs/OAuth2 Authentication.md",
     "02_Learning Topics/Java/Interfaces & Abstraction.md",
@@ -193,17 +206,9 @@
     "01_Architecture/Interfaces.md",
     "01_Architecture/Hexagonal Architecture.md",
     "01_Architecture/Dependency Injection.md",
-    "00_Meta/BUGLOG.md",
-    "00_Meta/Claude.md",
-    "00_Meta/PROJECT.md",
-    "00_Meta/STATE.md",
-    "00_Meta/ROADMAP.md",
-    "00_Meta/REQUIREMENTS.md",
     "02_Learning Topics/Software Engineering/Testing Strategies.md",
     "02_Learning Topics/Software Engineering/DRY Principle.md",
     "02_Learning Topics/Software Engineering/Separation of Concerns.md",
-    "02_Learning Topics/Software Engineering/Clean Code.md",
-    "02_Learning Topics/Software Engineering/Design Patterns.md",
     "03_Code/Phase 7",
     "03_Code/Phase 6",
     "03_Code/Phase 5",

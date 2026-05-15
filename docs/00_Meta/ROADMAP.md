@@ -1,162 +1,152 @@
-# Roadmap - Timeline & Phases
+## Roadmap - Daily Task Orchestrator
 
-## Overall Timeline
+## Timeline
 
-**Duration:** 11-16 weeks
-**Commitment:** 5-10 hours per week
-**Status:** Ready to start
+| Phase | Name | Duration | Focus |
+|-------|------|----------|-------|
+| 1 | Project Setup | 1-2 weeks | Architecture, Maven, interfaces |
+| 2 | Gmail Integration | 2-3 weeks | APIs, OAuth2, email fetching |
+| 3 | Data Parsing | 2-3 weeks | Data models, parsing, normalization |
+| 4 | Claude Integration | 2-3 weeks | LLM API, prompt engineering, analysis |
+| 5 | Email Output | 1-2 weeks | Email formatting, sending |
+| 6 | AWS Deployment | 1 week | Lambda, Secrets Manager, CloudWatch |
+| 7 | University Portal | 2+ weeks | Web scraping, API exploration |
+| **TOTAL** | **Full System** | **11-16 weeks** | **Production-ready** |
 
 ## Phase Breakdown
 
-### Phase 1: Project Setup (Week 1-2)
-**Goal:** Build foundation with clean architecture
+### Phase 1: Project Setup (Weeks 1-2)
+**Goal:** Foundation & Architecture
 
-What to build:
-- Maven project structure
-- Core interfaces
-- Manual dependency injection
-- Test framework
+- [x] Create Maven project
+- [x] Design interfaces (DataSource, Analyzer, Notifier)
+- [x] Setup manual DI
+- [x] Create base test structure
+- [x] Write documentation
 
-Learning:
-- Hexagonal architecture
-- SOLID principles
-- Maven basics
-- JUnit + Mockito
+**Learning:** Architecture, Maven, testing, interfaces
 
-Status: ⏳ Ready
+**Deliverable:** Compilable, testable project with no external dependencies
 
 ---
 
-### Phase 2: Gmail Integration (Week 3-4)
-**Goal:** Fetch and parse Gmail emails
+### Phase 2: Gmail Integration (Weeks 3-4)
+**Goal:** Fetch emails via Gmail API
 
-What to build:
-- OAuth2 authentication
-- GmailDataSource implementation
-- Email parsing & filtering
-- RawTask objects
+- [ ] Set up Gmail API credentials
+- [ ] Implement OAuth2 authentication
+- [ ] Build GmailDataSource
+- [ ] Handle edge cases & errors
+- [ ] Test with real Gmail account
 
-Learning:
-- REST APIs
-- OAuth2 flow
-- Error handling
-- Data extraction
+**Learning:** REST APIs, OAuth2, authentication, error handling
 
-Status: ⏳ Waiting for Phase 1
+**Deliverable:** Can fetch emails from Gmail
 
 ---
 
-### Phase 3: Data Normalization (Week 5-6)
-**Goal:** Normalize to unified Task model
+### Phase 3: Data Parsing (Weeks 5-6)
+**Goal:** Parse emails into Task objects
 
-What to build:
-- Task domain model
-- Deadline parsing
-- Title extraction
-- TaskNormalizer
+- [ ] Design Task domain model
+- [ ] Build email parser (extract deadline, title)
+- [ ] Handle multiple email formats
+- [ ] Normalize data
+- [ ] Build integration test (email → Task)
 
-Learning:
-- Domain-driven design
-- Data modeling
-- Regex & text parsing
-- Graceful degradation
+**Learning:** Data modeling, parsing, regex, testing strategies
 
-Status: ⏳ Waiting for Phase 2
+**Deliverable:** Can convert Gmail messages to Task objects
 
 ---
 
-### Phase 4: Claude API (Week 7-8)
-**Goal:** AI-powered prioritization
+### Phase 4: Claude Integration (Weeks 7-8)
+**Goal:** Analyze tasks with AI
 
-What to build:
-- Anthropic API client
-- Prompt engineering
-- Response parsing
-- TaskAnalyzer
+- [ ] Set up Anthropic API
+- [ ] Build Claude API client
+- [ ] Implement TaskAnalyzer
+- [ ] Design prompts for prioritization
+- [ ] Test with real tasks
 
-Learning:
-- LLM integration
-- Prompt design
-- JSON parsing
-- Cost awareness
+**Learning:** LLM APIs, prompt engineering, API integration
 
-Status: ⏳ Waiting for Phase 3
+**Deliverable:** Can prioritize and schedule tasks with Claude
 
 ---
 
-### Phase 5: Email Output (Week 9-10)
-**Goal:** Send formatted daily reports
+### Phase 5: Email Output (Weeks 9-10)
+**Goal:** Send formatted daily email
 
-What to build:
-- Email templates (HTML)
-- SMTP configuration
-- Main orchestrator
-- Integration tests
+- [ ] Design email template
+- [ ] Build EmailTaskNotifier
+- [ ] Format AnalyzedTasks for email
+- [ ] Send via Gmail SMTP
+- [ ] End-to-end test locally
 
-Learning:
-- Email generation
-- SMTP protocol
-- HTML templating
-- End-to-end testing
+**Learning:** Email formatting, SMTP, Java Mail, integration testing
 
-Status: ⏳ Waiting for Phase 4
+**Deliverable:** Receive daily email with prioritized tasks
 
 ---
 
 ### Phase 6: AWS Deployment (Week 11)
 **Goal:** Automate with Lambda
 
-What to build:
-- Lambda handler
-- Secrets Manager integration
-- CloudWatch Events (9 AM trigger)
-- Deployment scripts
+- [ ] Package as Lambda function
+- [ ] Set up Secrets Manager
+- [ ] Configure CloudWatch Events (9 AM trigger)
+- [ ] Test deployment
+- [ ] Monitor execution
 
-Learning:
-- AWS Lambda
-- IAM permissions
-- CloudWatch
-- Infrastructure
+**Learning:** Serverless, AWS, deployment, IAM
 
-Status: ⏳ Waiting for Phase 5
+**Deliverable:** Automated daily execution at 9 AM
 
 ---
 
 ### Phase 7: University Portal (Week 12+)
-**Goal:** Multi-source aggregation
+**Goal:** Integrate university assignments
 
-What to build:
-- HTML parser (Jsoup)
-- Portal authentication
-- UniversityDataSource
-- Duplicate detection
+- [ ] Investigate portal (API? HTML?)
+- [ ] Build UniversityDataSource
+- [ ] Handle authentication
+- [ ] Parse assignment data
+- [ ] Multi-source aggregation
 
-Learning:
-- Web scraping
-- HTML parsing
-- Enterprise SSO
-- Data deduplication
+**Learning:** Web scraping / API integration, decision-making under uncertainty
 
-Status: ⏳ Waiting for Phase 6
+**Deliverable:** Unified task list from all sources
 
 ---
 
-## Weekly Schedule
+## Weekly Commitment
 
-| Time | Activity | Hours |
-|------|----------|-------|
-| Monday | Read CODE prompt | 1 |
-| Tue-Wed | Implement code | 3-4 |
-| Thursday | EXPLANATION + Learning | 1-2 |
-| Friday | Review + Document | 1 |
-| **Total** | **Per week** | **6-8** |
+**Assumption:** 5-10 hours/week
+
+| Week | Phase | Expected | Actual |
+|------|-------|----------|--------|
+| 1 | Phase 1 | 4-5 hrs | |
+| 2 | Phase 1 | 2-3 hrs | |
+| 3 | Phase 2 | 4-5 hrs | |
+| 4 | Phase 2 | 4-5 hrs | |
+| 5 | Phase 3 | 4-5 hrs | |
+| 6 | Phase 3 | 4-5 hrs | |
+| 7 | Phase 4 | 5-6 hrs | |
+| 8 | Phase 4 | 4-5 hrs | |
+| 9 | Phase 5 | 3-4 hrs | |
+| 10 | Phase 5 | 3-4 hrs | |
+| 11 | Phase 6 | 3-4 hrs | |
+| 12 | Phase 7 | 4-5 hrs | |
+
+**Total: 48-58 hours**
 
 ## Milestones
 
-- [ ] Week 2: Phase 1 complete, tests pass
-- [ ] Week 4: Can fetch Gmail
-- [ ] Week 6: Can normalize to Tasks
-- [ ] Week 8: Can analyze with Claude
-- [ ] Week 10: Can send emails
-- [ ] Week 11: Running on Lambda
-- [ ] Week 12+: Multi-source working
+- **Milestone 1 (Week 2):** Project compiles, tests pass
+- **Milestone 2 (Week 4):** Can fetch Gmail
+- **Milestone 3 (Week 6):** Can parse into Tasks
+- **Milestone 4 (Week 8):** Can prioritize with Claude
+- **Milestone 5 (Week 10):** Can send email locally
+- **Milestone 6 (Week 11):** Running on Lambda
+- **Milestone 7 (Week 12+):** Multi-source aggregation
