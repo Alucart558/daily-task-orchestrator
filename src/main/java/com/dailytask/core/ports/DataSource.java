@@ -1,12 +1,10 @@
 package com.dailytask.core.ports;
 
-import com.dailytask.core.domain.RawTask;
+import com.dailytask.core.domain.RawData;
+import java.time.Instant;
 import java.util.List;
 
-/**
- * Contract for fetching raw task data from external platforms.
- */
 public interface DataSource {
-    List<RawTask> fetch();
+    List<RawData> fetch(Instant from);
     String getName();
 }

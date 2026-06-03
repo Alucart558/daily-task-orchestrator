@@ -1,10 +1,10 @@
 package com.dailytask.core.usecases;
 
 import com.dailytask.adapters.TestDataBuilder;
-import com.dailytask.core.domain.AnalyzedTasks;
-import com.dailytask.core.domain.RawTask;
+import com.dailytask.core.domain.TasksSummary;
+import com.dailytask.core.domain.RawData;
 import com.dailytask.core.ports.DataSource;
-import com.dailytask.core.ports.TaskAnalyzer;
+import com.dailytask.core.ports.TaskSummarizer;
 import com.dailytask.core.ports.TaskNotifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.*;
 class DailyTaskOrchestratorTest {
 
     @Mock private DataSource mockDataSource;
-    @Mock private TaskAnalyzer mockAnalyzer;
+    @Mock private TaskSummarizer mockSummarizer;
     @Mock private TaskNotifier mockNotifier;
 
     private DailyTaskOrchestrator orchestrator;
@@ -30,7 +31,7 @@ class DailyTaskOrchestratorTest {
     void setUp() {
         orchestrator = new DailyTaskOrchestrator(
                 List.of(mockDataSource),
-                mockAnalyzer,
+                mockSummarizer,
                 mockNotifier
         );
     }
@@ -38,19 +39,19 @@ class DailyTaskOrchestratorTest {
     @Test
     void shouldExecuteFullWorkflow() {
         // Arrange
-        List<RawTask> mockRawTasks = List.of(TestDataBuilder.buildRawTask());
-        AnalyzedTasks mockAnalyzed = TestDataBuilder.buildAnalyzedTasks();
+        List<RawData> mockRawTasks = List.of(TestDataBuilder.buildRawData());
+        TasksSummary mockSummarized = TestDataBuilder.buildSummarizedTasks();
 
-        when(mockDataSource.fetch()).thenReturn(mockRawTasks);
+        when(mockDataSource.fetch(Instant.now().minusSeconds(24 * 60 * 60))).thenReturn(mockRawTasks);
         when(mockDataSource.getName()).thenReturn("MockSource");
-        when(mockAnalyzer.analyze(any())).thenReturn(mockAnalyzed);
+        when(mockSummarizer.summarize(any())).thenReturn(mockSummarized);
 
         // Act
         orchestrator.execute();
 
         // Assert
-        verify(mockDataSource, times(1)).fetch();
-        verify(mockAnalyzer, times(1)).analyze(anyList());
-        verify(mockNotifier, times(1)).notify(mockAnalyzed);
+        verify(mockDataSource, times(1)).fetch(Instant.now().minusSeconds(24 * 60 * 60));
+        verify(mockSummarizer, times(1)).summarize(anyList());
+        verify(mockNotifier, times(1)).notify(mockSummarized);
     }
 }

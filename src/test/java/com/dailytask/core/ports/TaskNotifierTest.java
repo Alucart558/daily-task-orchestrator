@@ -1,7 +1,7 @@
 package com.dailytask.core.ports;
 
 import com.dailytask.adapters.TestDataBuilder;
-import com.dailytask.core.domain.AnalyzedTasks;
+import com.dailytask.core.domain.TasksSummary;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,7 +17,7 @@ class TaskNotifierTest {
 
     @Test
     void testNotifierContract() {
-        AnalyzedTasks payload = TestDataBuilder.buildAnalyzedTasks();
+        TasksSummary payload = TestDataBuilder.buildSummarizedTasks();
 
         taskNotifier.notify(payload);
 

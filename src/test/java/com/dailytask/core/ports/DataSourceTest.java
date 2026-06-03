@@ -1,13 +1,14 @@
 package com.dailytask.core.ports;
 
 import com.dailytask.adapters.TestDataBuilder;
-import com.dailytask.core.domain.RawTask;
+import com.dailytask.core.domain.RawData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,12 +22,12 @@ class DataSourceTest {
 
     @Test
     void testDataSourceContract() {
-        List<RawTask> mockData = List.of(TestDataBuilder.buildRawTask());
+        List<RawData> mockData = List.of(TestDataBuilder.buildRawData());
 
-        when(dataSource.fetch()).thenReturn(mockData);
+        when(dataSource.fetch(Instant.now().minusSeconds(24 * 60 * 60))).thenReturn(mockData);
         when(dataSource.getName()).thenReturn("MockSource");
 
-        List<RawTask> result = dataSource.fetch();
+        List<RawData> result = dataSource.fetch(Instant.now().minusSeconds(24 * 60 * 60));
 
         assertNotNull(result);
         assertEquals(1, result.size());

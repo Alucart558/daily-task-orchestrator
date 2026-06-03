@@ -2,13 +2,13 @@ package com.dailytask.core.domain;
 
 import java.time.LocalDateTime;
 
-public class RawTask {
+public class RawData {
     private final String source;
     private final String title;
     private final String rawContent;
     private final LocalDateTime fetchedAt;
 
-    public RawTask(String source, String title, String rawContent, LocalDateTime fetchedAt) {
+    public RawData(String source, String title, String rawContent, LocalDateTime fetchedAt) {
         this.source = source;
         this.title = title;
         this.rawContent = rawContent;

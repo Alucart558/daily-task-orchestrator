@@ -1,7 +1,7 @@
 package com.dailytask.core.ports;
 
 import com.dailytask.adapters.TestDataBuilder;
-import com.dailytask.core.domain.AnalyzedTasks;
+import com.dailytask.core.domain.TasksSummary;
 import com.dailytask.core.domain.Task;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,18 +16,19 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TaskAnalyzerTest {
+class TaskSummarizerTest {
 
     @Mock
-    private TaskAnalyzer taskAnalyzer;
+
+    private TaskSummarizer taskSummarizer;
 
     @Test
     void testAnalyzerContract() {
-        AnalyzedTasks mockAnalyzed = TestDataBuilder.buildAnalyzedTasks();
-        when(taskAnalyzer.analyze(anyList())).thenReturn(mockAnalyzed);
+        TasksSummary mockAnalyzed = TestDataBuilder.buildSummarizedTasks();
+        when(taskSummarizer.summarize(anyList())).thenReturn(mockAnalyzed);
 
-        List<Task> tasksToAnalyze = List.of(TestDataBuilder.buildTask());
-        AnalyzedTasks result = taskAnalyzer.analyze(tasksToAnalyze);
+        List<Task> tasksToAnalyze = List.of(TestDataBuilder.buildData());
+        TasksSummary result = taskSummarizer.summarize(tasksToAnalyze);
 
         assertNotNull(result);
         assertEquals("Test Summary", result.getSummary());

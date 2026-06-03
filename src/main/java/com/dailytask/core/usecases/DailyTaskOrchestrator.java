@@ -1,10 +1,10 @@
 package com.dailytask.core.usecases;
 
-import com.dailytask.core.domain.AnalyzedTasks;
-import com.dailytask.core.domain.RawTask;
+import com.dailytask.core.domain.TasksSummary;
+import com.dailytask.core.domain.RawData;
 import com.dailytask.core.domain.Task;
 import com.dailytask.core.ports.DataSource;
-import com.dailytask.core.ports.TaskAnalyzer;
+import com.dailytask.core.ports.TaskSummarizer;
 import com.dailytask.core.ports.TaskNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,17 +12,18 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Instant;
 
 public class DailyTaskOrchestrator {
     private static final Logger logger = LoggerFactory.getLogger(DailyTaskOrchestrator.class);
 
     private final List<DataSource> dataSources;
-    private final TaskAnalyzer analyzer;
+    private final TaskSummarizer summarizer;
     private final TaskNotifier notifier;
 
-    public DailyTaskOrchestrator(List<DataSource> dataSources, TaskAnalyzer analyzer, TaskNotifier notifier) {
+    public DailyTaskOrchestrator(List<DataSource> dataSources, TaskSummarizer summarizer, TaskNotifier notifier) {
         this.dataSources = dataSources;
-        this.analyzer = analyzer;
+        this.summarizer = summarizer;
         this.notifier = notifier;
     }
 
@@ -30,16 +31,16 @@ public class DailyTaskOrchestrator {
         logger.info("Starting Daily Task Orchestration...");
 
         try {
-            List<RawTask> allRawTasks = new ArrayList<>();
+            List<RawData> allRawTasks = new ArrayList<>();
             for (DataSource source : dataSources) {
                 logger.debug("Fetching from source: {}", source.getName());
-                allRawTasks.addAll(source.fetch());
+                allRawTasks.addAll(source.fetch(Instant.now().minusSeconds(24 * 3600))); // Fetch tasks from the last 24 hours
             }
 
             // Normalization step (mocked for now)
             List<Task> normalizedTasks = normalizeTasks(allRawTasks);
 
-            AnalyzedTasks analyzedResult = analyzer.analyze(normalizedTasks);
+            TasksSummary analyzedResult = summarizer.summarize(normalizedTasks);
 
             notifier.notify(analyzedResult);
 
@@ -49,11 +50,11 @@ public class DailyTaskOrchestrator {
         }
     }
 
-    private List<Task> normalizeTasks(List<RawTask> rawTasks) {
+    private List<Task> normalizeTasks(List<RawData> rawTasks) {
         // TODO: Extract actual normalization logic to a dedicated mapper/service
         List<Task> tasks = new ArrayList<>();
         for (int i = 0; i < rawTasks.size(); i++) {
-            RawTask raw = rawTasks.get(i);
+            RawData raw = rawTasks.get(i);
             tasks.add(new Task(
                     "T-" + i,
                     raw.getTitle(),

@@ -2,7 +2,7 @@ package com.dailytask;
 
 import com.dailytask.core.config.AppConfig;
 import com.dailytask.core.ports.DataSource;
-import com.dailytask.core.ports.TaskAnalyzer;
+import com.dailytask.core.ports.TaskSummarizer;
 import com.dailytask.core.ports.TaskNotifier;
 import com.dailytask.core.usecases.DailyTaskOrchestrator;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ public class Main {
 
         try {
             List<DataSource> sources = AppConfig.createDataSources();
-            TaskAnalyzer analyzer = AppConfig.createAnalyzer();
+            TaskSummarizer analyzer = AppConfig.createAnalyzer();
             TaskNotifier notifier = AppConfig.createNotifier();
 
             DailyTaskOrchestrator orchestrator = new DailyTaskOrchestrator(sources, analyzer, notifier);
