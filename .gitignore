@@ -4,3 +4,5 @@ logs/
 *.log
 docs/.obsidian/
 docs/copilot/
+credentials.json
+Usersdawib/.dailytask/gmail_tokens/StoredCredential
