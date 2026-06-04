@@ -14,9 +14,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>2.0.9</slf4j.version>
         <logback.version>1.4.11</logback.version>
-        <junit.version>5.10.0</junit.version>
-        <mockito.version>5.5.0</mockito.version>
-        <jackson.version>2.15.2</jackson.version>
+        <junit.version>5.10.1</junit.version>
+        <mockito.version>5.8.0</mockito.version>
+        <jackson.version>2.16.1</jackson.version>
+        <google.api.client.version>1.35.2</google.api.client.version>
+        <google.oauth.client.jetty.version>1.34.1</google.oauth.client.jetty.version>
+        <google.api.services.gmail.version>v1-rev20240520-2.0.0</google.api.services.gmail.version>
     </properties>
 
     <dependencies>
@@ -32,10 +35,32 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- JSON Processing -->
+        <!-- Google APIs -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>${google.api.client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-gmail</artifactId>
+            <version>${google.api.services.gmail.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client-jetty</artifactId>
+            <version>${google.oauth.client.jetty.version}</version>
+        </dependency>
+
+        <!-- JSON and YAML Processing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
 
@@ -60,11 +85,6 @@
         </dependency>
 
         <!-- Optional Future Dependencies -->
-        <!-- <dependency>
-            <groupId>com.google.api-client</groupId>
-            <artifactId>google-api-client</artifactId>
-            <version>2.2.0</version>
-        </dependency> -->
         <!-- <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
