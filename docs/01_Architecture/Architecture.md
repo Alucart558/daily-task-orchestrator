@@ -1,7 +1,5 @@
-Wszystko zaczyna się w metodzie main w pliku [[Main]] Jej zadaniem jest "uruchomienie maszyny".
-
+### Wszystko zaczyna się w metodzie `main` w pliku [[Main]] Jej zadaniem jest "uruchomienie maszyny".
 ```java
-
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
@@ -27,25 +25,49 @@ public class Main {
     }
 }
 ```
+**Co się tu dzieje?**
 
-Co się tu dzieje?
-	1. [[main]] prosi klasę [[AppConfig]] o dostarczenie jej gotowych do użycia komponentów:  źródła danych ([[DataSource]]), analizatora ([[TaskSummarizer]]) i notyfikatora ([[TaskNotifier]]). Nie wie, jakie to są konkretnie implementacje (np. Gmail, Claude), tylko że spełniają one określony kontrakt ([[Interfaces]]).
-	2. Następnie tworzy główny obiekt logiki biznesowej, [[DailyTaskOrchestrator]], i "wstrzykuje" do niego te komponenty.
-	3. Na koniec wywołuje metodę execute(), która rozpoczyna właściwą pracę.
+1. [[main]] prosi klasę [[AppConfig]] o dostarczenie jej gotowych do użycia komponentów: źródła danych ([[DataSource]]), analizatora ([[TaskSummarizer]]) i notyfikatora ([[TaskNotifier]]). Nie wie, jakie to są konkretnie implementacje (np. Gmail, [[Claude]]), tylko że spełniają one określony kontrakt (interfejsy).
+    
+2. Następnie tworzy główny obiekt logiki biznesowej, [[DailyTaskOrchestrator]], i "wstrzykuje" do niego te komponenty.
+    
+3. Na koniec wywołuje metodę `execute()`, która rozpoczyna właściwą pracę.
+    
 
-**Konfiguracja zależności: [[AppConfig]]**
-Ta klasa działa jak fabryka. To tutaj decydujemy, jakich konkretnych narzędzi użyje nasza aplikacja.
+### Konfiguracja zależności: [[AppConfig]]
+
+Ta klasa działa jak centrum dowodzenia dla zależności ([[Dependency Injection]]). To tutaj pobieramy konfigurację ze środowiska, logujemy się do zewnętrznych API i decydujemy, jakich konkretnych narzędzi użyje nasza aplikacja.
 ```java
 public class AppConfig {
 
     public static List<DataSource> createDataSources() {
-        // Zdecydowano: źródłem danych będzie Gmail
-        return List.of(new GmailDataSource());
+        // 1. Pobranie kluczy API ze zmiennych środowiskowych (bezpieczeństwo!)
+        String clientId = System.getenv("GMAIL_CLIENT_ID");
+        String clientSecret = System.getenv("GMAIL_CLIENT_SECRET");
+        
+        if (clientId == null || clientSecret == null) {
+            throw new IllegalStateException("Brak zmiennych środowiskowych dla Gmail API!");
+        }
+
+        // 2. Konfiguracja uprawnień i ścieżek
+        GmailConfiguration config = new GmailConfiguration(
+            clientId, clientSecret, "http://localhost:8888/Callback",
+            "~/.dailytask/gmail_tokens",
+            List.of("https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.modify")
+        );
+
+        // 3. Zbudowanie drzewa zależności dla Gmaila
+        NetHttpTransport httpTransport = new NetHttpTransport();
+        GmailOAuth2Handler authHandler = new GmailOAuth2Handler(config, httpTransport);
+        GmailApiClient apiClient = new GmailApiClient(authHandler, httpTransport);
+
+        // Zdecydowano: źródłem danych będzie Gmail (wstrzykujemy gotowego klienta API)
+        return List.of(new GmailDataSource(apiClient));
     }
 
     public static TaskSummarizer createAnalyzer() {
         // Zdecydowano: analizatorem będzie Claude
-        return new ClaudeTaskAnalyzer();
+        return new ClaudeTasksSummarizer();
     }
 
     public static TaskNotifier createNotifier() {
@@ -54,16 +76,20 @@ public class AppConfig {
     }
 }
 ```
+**Co się tu dzieje?**
 
-Co się tu dzieje?
-	•Gdy [[Main]] woła AppConfig.createDataSources(), [[AppConfig]] tworzy nową instancję [[GmailDataSource]] i ją zwraca.
-	•Gdy [[Main]] woła AppConfig.createAnalyzer(), [[AppConfig]] tworzy ClaudeTaskAnalyzer.
-	•Gdy [[Main]] woła AppConfig.createNotifier(), [[AppConfig]] tworzy EmailTaskNotifier.
-Zaletą tego podejścia jest to, że jeśli jutro zechcesz dodać analizę zadań z Trello, zmienisz tylko jedną linię w createDataSources(): return List.of(new GmailDataSource(), new TrelloDataSource());. Reszta aplikacji nawet o tym nie wie.
+- Gdy `Main` woła `AppConfig.createDataSources()`, aplikacja najpierw sprawdza zmienne środowiskowe. Następnie przechodzi przez proces autoryzacji OAuth2 ([[GmailOAuth2Handler]]), tworzy niskopoziomowego klienta API ([[GmailApiClient]]) i dopiero na jego bazie buduje ostateczny adapter [[GmailDataSource]].
+    
+- Dzięki temu klasa [[Main]] nie musi nic wiedzieć o protokołach HTTP, tokenach OAuth2 czy ukrytych kluczach – dostaje gotowe do pracy źródło danych.
+    
+- Gdy [[Main]] woła `AppConfig.createAnalyzer()` i `createNotifier()`, otrzymuje odpowiednie implementacje do analizy i powiadomień.
+    
+- Zaletą tego podejścia jest to, że jeśli jutro zechcesz dodać nowe źródło (np. Trello), stworzysz konfigurację Trello w tej klasie i po prostu dodasz ją do zwracanej listy, bez zmieniania reszty aplikacji.
+    
 
-**Mózg operacji: [[DailyTaskOrchestrator]]**
-To jest serce logiki biznesowej. Ten plik nie wie, skąd pochodzą dane ani jak są analizowane, po prostu orkiestruje przepływ.
+### Mózg operacji: [[DailyTaskOrchestrator]]
 
+To jest serce logiki biznesowej. Ten plik nie wie, skąd pochodzą dane (czy to Gmail, czy Trello) ani jak są analizowane, po prostu orkiestruje przepływ danych pomiędzy komponentami.
 ```java
 public class DailyTaskOrchestrator {
     // ... (pola i konstruktor)
@@ -74,15 +100,15 @@ public class DailyTaskOrchestrator {
         // Krok 1: Pobierz surowe dane
         List<RawData> allRawTasks = new ArrayList<>();
         for (DataSource source : dataSources) {
-            // Wywołuje np. GmailDataSource.fetch(...)
-            allRawTasks.addAll(source.fetch(Instant.now().minusSeconds(24 * 3600)));
+            // Wywołuje np. GmailDataSource.fetch(...) z określoną datą początkową
+            allRawTasks.addAll(source.fetch(Instant.now().minus(24, ChronoUnit.HOURS)));
         }
 
         // Krok 2: Przekształć surowe dane w ustrukturyzowane zadania
         List<Task> normalizedTasks = normalizeTasks(allRawTasks);
 
         // Krok 3: Przekaż zadania do analizatora
-        // Wywołuje np. ClaudeTaskAnalyzer.summarize(...)
+        // Wywołuje np. ClaudeTasksSummarizer.summarize(...)
         TasksSummary analyzedResult = summarizer.summarize(normalizedTasks);
 
         // Krok 4: Wyślij wynik za pomocą notyfikatora
@@ -95,14 +121,17 @@ public class DailyTaskOrchestrator {
     private List<Task> normalizeTasks(List<RawData> rawTasks) {
         // Ta metoda na razie jest uproszczona.
         // Bierze surowe dane (np. treść e-maila) i tworzy z nich obiekt Task.
-        // TODO: Ta logika powinna być bardziej zaawansowana.
+        // W docelowej architekturze zostanie zastąpiona dedykowanym portem TaskExtractor.
         // ...
     }
 }
 ```
+**Co się tu dzieje?**
 
-Co się tu dzieje?
-	1.Pobieranie danych: DailyTaskOrchestrator przechodzi przez listę dataSources (w naszym przypadku zawiera tylko [[GmailDataSource]]) i na każdej z nich wywołuje metodę fetch(). [[GmailDataSource]] w tym momencie łączyłby się z Gmailem i pobierał e-maile, zwracając je jako listę obiektów [[RawData]].
-	2.Normalizacja: Metoda normalizeTasks bierze surowe dane (np. obiekt [[RawData]] z tytułem i treścią e-maila) i konwertuje je na bardziej ustrukturyzowany obiekt Task. W obecnej formie jest to bardzo uproszczone, ale w docelowym rozwiązaniu mogłoby tu następować np. wyciąganie kluczowych informacji z treści e-maila.
-	3.Analiza: [[DailyTaskOrchestrator]] przekazuje listę obiektów [[Task]] do summarizer.summarize(). W naszym przypadku [[ClaudeTaskAnalyzer]] wysłałby te dane do API modelu językowego Claude z prośbą o ich podsumowanie i zwróciłby wynik jako obiekt TasksSummary.
-	4.Powiadomienie: Na koniec, [[DailyTaskOrchestrator]] przekazuje TasksSummary do notifier.notify(). EmailTaskNotifier sformatowałby to podsumowanie i wysłał je jako e-mail.
+1. **Pobieranie danych:** [[DailyTaskOrchestrator]] przechodzi przez listę dataSources i na każdej z nich wywołuje metodę `fetch(Instant from)`. [[GmailDataSource]] w tym momencie uderza do API Google, autoryzuje się odświeżonym tokenem i pobiera e-maile z ostatnich 24 godzin, zwracając je jako listę obiektów [[RawData]].
+    
+2. **Normalizacja:** Metoda `normalizeTasks` bierze surowe, nieustrukturyzowane dane (np. obiekt [[RawData]] z zanieczyszczoną treścią e-maila) i konwertuje je na obiekt [[Task]].
+    
+3. **Analiza:** Orchestrator przekazuje listę obiektów [[Task]] do `summarizer.summarize()`. W naszym przypadku [[ClaudeTasksSummarizer]] wysłałby te dane do API modelu językowego Claude z prośbą o inteligentne grupowanie i zwróciłby wynik jako obiekt [[TasksSummary]].
+    
+4. **Powiadomienie:** Na koniec, wynik trafia do `notifier.notify()`. `EmailTaskNotifier` formatuje to podsumowanie i wysyła użytkownikowi gotowy raport.
