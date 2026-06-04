@@ -2,7 +2,7 @@ Sprawdzenie, czy metoda wysyłająca powiadomienie faktycznie się wywołuje.
 ```java
 @Test
 void testNotifierContract() {
-    AnalyzedTasks payload = TestDataBuilder.buildAnalyzedTasks();
+    TasksSummary payload = TestDataBuilder.buildSummarizedTasks();
     
     taskNotifier.notify(payload);
     

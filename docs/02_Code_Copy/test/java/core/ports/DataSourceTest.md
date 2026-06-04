@@ -7,12 +7,12 @@ class DataSourceTest {
 
     @Test
     void testDataSourceContract() {
-        List<RawTask> mockData = List.of(TestDataBuilder.buildRawTask());
+        List<RawData> mockData = List.of(TestDataBuilder.buildRawData());
         
-        when(dataSource.fetch()).thenReturn(mockData);
+        when(dataSource.fetch(any())).thenReturn(mockData);
         when(dataSource.getName()).thenReturn("MockSource");
 
-        List<RawTask> result = dataSource.fetch();
+        List<RawData> result = dataSource.fetch(Instant.now());
         
         assertNotNull(result);
         assertEquals(1, result.size());

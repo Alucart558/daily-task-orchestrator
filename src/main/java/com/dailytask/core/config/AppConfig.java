@@ -1,6 +1,6 @@
 package com.dailytask.core.config;
 
-import com.dailytask.adapters.analyzers.ClaudeTaskAnalyzer;
+import com.dailytask.adapters.analyzers.ClaudeTasksSummarizer;
 import com.dailytask.adapters.datasources.GmailDataSource;
 import com.dailytask.adapters.notifiers.EmailTaskNotifier;
 import com.dailytask.core.ports.DataSource;
@@ -16,7 +16,7 @@ public class AppConfig {
     }
 
     public static TaskSummarizer createAnalyzer() {
-        return new ClaudeTaskAnalyzer();
+        return new ClaudeTasksSummarizer();
     }
 
     public static TaskNotifier createNotifier() {

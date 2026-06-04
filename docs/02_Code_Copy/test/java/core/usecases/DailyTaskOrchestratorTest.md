@@ -2,24 +2,24 @@
 @ExtendWith(MockitoExtension.class)
 class DailyTaskOrchestratorTest {
     @Mock private DataSource mockDataSource;
-    @Mock private TaskAnalyzer mockAnalyzer;
+    @Mock private TaskSummarizer mockSummarizer;
     // ...
     @Test
     void shouldExecuteFullWorkflow() {
         // Arrange
-        when(mockDataSource.fetch()).thenReturn(mockRawTasks);
+        when(mockDataSource.fetch(any())).thenReturn(mockRawData);
         
         // Act
         orchestrator.execute();
         
         // Assert
-        verify(mockDataSource, times(1)).fetch();
+        verify(mockDataSource, times(1)).fetch(any());
     }
 }
 ```
 * `@ExtendWith(MockitoExtension.class)`: Włącza bibliotekę Mockito do tego pliku testowego.
 * `@Mock`: Tworzy tzw. "atrapy". Zamiast prawdziwego, powolnego API, Mockito generuje fałszywy obiekt, który zachowuje się tak, jak mu rozkażemy.
 * Podejście **Arrange - Act - Assert** (AAA):
-* **Arrange (Przygotuj):** Ustawiamy zachowanie atrap. `when(...).thenReturn(...)` mówi: "Kiedy ktoś wywoła metodę fetch(), zwróć przygotowaną wcześniej listę mockRawTasks"
+* **Arrange (Przygotuj):** Ustawiamy zachowanie atrap. `when(...).thenReturn(...)` mówi: "Kiedy ktoś wywoła metodę fetch(Instant), zwróć przygotowaną wcześniej listę mockRawData"
 * **Act (Działaj):** Odpalamy prawdziwą metodę na naszym głównym obiekcie (`orchestrator.execute()`).
-* **Assert (Sprawdź):** Weryfikujemy, czy aplikacja zadziałała poprawnie. `verify(..., times(1))` sprawdza układ nerwowy programu: "Czy na pewno podczas działania metody `execute()`, aplikacja odwołała się do metody `fetch()` dokładnie jeden raz?".
+* **Assert (Sprawdź):** Weryfikujemy, czy aplikacja zadziałała poprawnie. `verify(..., times(1))` sprawdza układ nerwowy programu: "Czy na pewno podczas działania metody `execute()`, aplikacja odwołała się do metody `fetch(Instant)` dokładnie jeden raz?".

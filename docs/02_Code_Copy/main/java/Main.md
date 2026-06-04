@@ -1,10 +1,10 @@
 ```java
 public static void main(String[] args) {
     List<DataSource> sources = AppConfig.createDataSources();
-    TaskAnalyzer analyzer = AppConfig.createAnalyzer();
+    TaskSummarizer summarizer = AppConfig.createAnalyzer();
     TaskNotifier notifier = AppConfig.createNotifier();
 
-    DailyTaskOrchestrator orchestrator = new DailyTaskOrchestrator(sources, analyzer, notifier);
+    DailyTaskOrchestrator orchestrator = new DailyTaskOrchestrator(sources, summarizer, notifier);
     orchestrator.execute();
 }
 ```

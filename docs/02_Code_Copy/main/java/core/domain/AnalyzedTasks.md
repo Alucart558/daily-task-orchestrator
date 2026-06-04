@@ -1,3 +1,3 @@
-Reprezentuje finalny wynik działania AI. Posiada obiekty `Task` oraz rekomendacje i podsumowanie.
+Deprecated — zobacz `TasksSummary.md`.
 
-* Podobnie jak `RawTask`, używa `final`. Wynik z AI traktujemy jako ostateczny raport do wysłania, nie chcemy go modyfikować w locie.
+W aktualnym kodzie i dokumentacji kanoniczną nazwą jest `TasksSummary`.

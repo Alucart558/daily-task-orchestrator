@@ -6,15 +6,15 @@ Multiple Data Sources (Gmail, University, Professors)
 ↓ 
 Data Fetching Layer 
 ↓ 
-RawTask Objects 
+[[RawData]] Objects 
 ↓ 
 Data Normalization Layer 
 ↓ 
-Task Objects 
+[[Task]] Objects 
 ↓ 
-Claude API Analysis
+Claude API Summary
 ↓
-AnalyzedTasks 
+SummarizedTasks]
 ↓
 Email Formatting & Sending
 ↓ Daily Email to User
@@ -36,14 +36,14 @@ Email Formatting & Sending
 
 ## Key Interfaces
 
-- `DataSource` - Fetch from any source
-- `TaskAnalyzer` - Analyze tasks
-- `TaskNotifier` - Send notifications
+- [[DataSource]] - Fetch from any source
+- [[TaskAnalyzer]] - Analyze tasks
+- [[TaskNotifier]] - Send notifications
 
 ## Data Models
 
-- `RawTask` - Raw data from source
-- `Task` - Normalized domain model
-- `AnalyzedTasks` - Final analysis result
+- [[RawData]] - Raw data from source
+- [[Task]] - Normalized domain model
+- [[SummarizedTasks]] - Final analysis result
 
 See: [[Hexagonal Architecture.md]]

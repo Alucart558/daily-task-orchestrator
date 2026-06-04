@@ -6,11 +6,11 @@
 
 ## Completed ✅
 
-- [ ] None yet (just starting)
+- [x] None yet (just starting)
 
 ## In Progress 🟡
 
-- [ ] Phase 1 Step 1: Maven Setup & Interfaces
+- [x] Phase 1 Step 1: Maven Setup & Interfaces
 
 ## Not Started ⭕
 

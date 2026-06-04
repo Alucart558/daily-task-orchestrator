@@ -26,11 +26,11 @@ External World
 ↓(Adapter) 
 Gmail Data
 ↓ (Adapter converts to) 
-RawTask
+[[RawData]]
 ↓ (Normalizer converts to) 
-Task
-↓ (Analyzer)
-AnalyzedTasks
+[[Task]]
+↓ ([[ClaudeTasksSummarizer]])
+SummarizedTasks
 ↓ (Formatter) 
 Email HTML 
 ↓(Adapter sends via) 

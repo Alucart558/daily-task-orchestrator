@@ -4,7 +4,7 @@ public class EmailTaskNotifier implements TaskNotifier {
     private static final Logger logger = LoggerFactory.getLogger(EmailTaskNotifier.class);
 
     @Override
-    public void notify(AnalyzedTasks tasks) {
+    public void notify(TasksSummary tasks) {
         logger.info("Sending notification email to user...");
         logger.debug("Notification payload: {}", tasks.getSummary());
     }
