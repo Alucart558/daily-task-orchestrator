@@ -53,38 +53,48 @@ public class AppConfig {
         GmailConfiguration config = new GmailConfiguration(
             clientId, clientSecret, "http://localhost:8888/Callback",
             "~/.dailytask/gmail_tokens",
-            List.of("https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.modify")
+            List.of("[https://www.googleapis.com/auth/gmail.readonly](https://www.googleapis.com/auth/gmail.readonly)", "[https://www.googleapis.com/auth/gmail.modify](https://www.googleapis.com/auth/gmail.modify)")
         );
 
-        // 3. Zbudowanie drzewa zależności dla Gmaila
+        // 3. Zbudowanie drzewa zależności infrastrukturalnych dla Gmaila
         NetHttpTransport httpTransport = new NetHttpTransport();
         GmailOAuth2Handler authHandler = new GmailOAuth2Handler(config, httpTransport);
         GmailApiClient apiClient = new GmailApiClient(authHandler, httpTransport);
 
-        // Zdecydowano: źródłem danych będzie Gmail (wstrzykujemy gotowego klienta API)
-        return List.of(new GmailDataSource(apiClient));
+        // 4. Zainicjalizowanie klas odpowiedzialnych za przetwarzanie surowych e-maili
+        List<String> taskKeywords = List.of("assignment", "deadline", "due", "project", "submit", "quiz", "exam", "homework");
+        EmailFilter emailFilter = new EmailFilter(taskKeywords);
+        GmailMessageParser messageParser = new GmailMessageParser();
+        EmailToRawDataConverter rawDataConverter = new EmailToRawDataConverter();
+        int queryLimit = 20;
+
+        // 5. Złożenie całego adaptera w jedną całość
+        return List.of(new GmailDataSource(apiClient, emailFilter, messageParser, rawDataConverter, queryLimit));
     }
 
     public static TaskSummarizer createAnalyzer() {
-        // Zdecydowano: analizatorem będzie Claude
-        return new ClaudeTasksSummarizer();
+        return new ClaudeTasksSummarizer(); // W przyszłości np. nowy adapter OpenAI
     }
 
     public static TaskNotifier createNotifier() {
-        // Zdecydowano: powiadomienia będą wysyłane e-mailem
         return new EmailTaskNotifier();
     }
 }
 ```
 **Co się tu dzieje?**
 
-- Gdy `Main` woła `AppConfig.createDataSources()`, aplikacja najpierw sprawdza zmienne środowiskowe. Następnie przechodzi przez proces autoryzacji OAuth2 ([[GmailOAuth2Handler]]), tworzy niskopoziomowego klienta API ([[GmailApiClient]]) i dopiero na jego bazie buduje ostateczny adapter [[GmailDataSource]].
+- Gdy `Main` woła `AppConfig.createDataSources()`, aplikacja najpierw sprawdza zmienne środowiskowe. Następnie przechodzi przez proces autoryzacji OAuth2 ([[GmailOAuth2Handler]]), tworzy niskopoziomowego klienta API ([[GmailApiClient]]) i dopiero na jego bazie buduje ostateczny adapter [[GmailDataSource]]. Konfigurator nie tylko buduje połączenie z Google API. Buduje również całą "linię produkcyjną" adaptera ([[GmailMessageParser]] -> [[EmailFilter]] -> [[EmailToRawDataConverter]]), ściśle stosując zasadę Single Responsibility (SRP). Cała ta złożoność jest pakowana do obiektu [[GmailDataSource]] i zwracana na zewnątrz jako prosty kontrakt [[DataSource]].
+### Przepływ danych wewnątrz Adaptera: [[GmailDataSource]]
+
+Zanim dane trafią do centralnego programu, przechodzą proces wewnątrz adaptera `GmailDataSource`:
+
+1. **Odpytanie API:** `GmailDataSource` używa `EmailFilter.getTaskQuery()`, by stworzyć zapytanie po dacie. Odpytuje `GmailApiClient` i otrzymuje surowe, skomplikowane obiekty `Message` prosto z serwerów Google.
     
-- Dzięki temu klasa [[Main]] nie musi nic wiedzieć o protokołach HTTP, tokenach OAuth2 czy ukrytych kluczach – dostaje gotowe do pracy źródło danych.
+2. **Parsowanie:** Złożone i zakodowane w Base64 obiekty od Google są przekazywane do `GmailMessageParser`, który odkodowuje treść, wyciąga temat oraz nadawcę, tworząc czysty, domenowy obiekt adaptera: `GmailMessage`.
     
-- Gdy [[Main]] woła `AppConfig.createAnalyzer()` i `createNotifier()`, otrzymuje odpowiednie implementacje do analizy i powiadomień.
+3. **Filtrowanie:** Gotowy `GmailMessage` trafia do `EmailFilter.isTaskEmail()`, który w pamięci sprawdza, czy e-mail faktycznie zawiera zdefiniowane słowa kluczowe (zadania, projekty).
     
-- Zaletą tego podejścia jest to, że jeśli jutro zechcesz dodać nowe źródło (np. Trello), stworzysz konfigurację Trello w tej klasie i po prostu dodasz ją do zwracanej listy, bez zmieniania reszty aplikacji.
+4. **Konwersja:** Odfiltrowane e-maile są przekazywane do `EmailToRawDataConverter`, który zamienia powiązany z Gmailem obiekt na całkowicie niezależny ustandaryzowany obiekt `RawData`.
     
 
 ### Mózg operacji: [[DailyTaskOrchestrator]]
@@ -135,3 +145,5 @@ public class DailyTaskOrchestrator {
 3. **Analiza:** Orchestrator przekazuje listę obiektów [[Task]] do `summarizer.summarize()`. W naszym przypadku [[ClaudeTasksSummarizer]] wysłałby te dane do API modelu językowego Claude z prośbą o inteligentne grupowanie i zwróciłby wynik jako obiekt [[TasksSummary]].
     
 4. **Powiadomienie:** Na koniec, wynik trafia do `notifier.notify()`. `EmailTaskNotifier` formatuje to podsumowanie i wysyła użytkownikowi gotowy raport.
+
+**Pełny cykl życia zadania w architekturze:** `Google JSON (Infrastruktura)` -> **Parser** -> `GmailMessage (Adapter)` -> **Filter** -> **Converter** -> `RawData (Domena Wejściowa)` -> **Extractor** -> `Task (Główny model domeny)` -> **Summarizer** -> `TasksSummary (Wynik)` -> **Notifier** -> `Wiadomość wysłana do użytkownika`.
