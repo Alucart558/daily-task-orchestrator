@@ -1,48 +1,29 @@
-### 1. Przygotowanie (Konstruktor)
-```java
-public GmailDataSource(GmailApiClient apiClient) {
-    this.apiClient = apiClient;
-}
-```
-Klasa ta potrzebuje pomocy zewnętrznego narzędzia ([[GmailApiClient]]), aby faktycznie połączyć się z serwerami Google. Przekazujemy to narzędzie w momencie tworzenia obiektu – dzięki temu nasza klasa wie, kogo prosić o pobranie maili.
+Ten kod to klasa `GmailDataSource`, która pełni rolę „pośrednika” (tzw. adaptera) pomiędzy Twoją aplikacją a pocztą Gmail. Jej zadaniem jest pobranie e-maili z Gmaila i zamiana ich na ustandaryzowaną formę ([[RawData]]), którą reszta Twojego systemu potrafi zrozumieć.
+### Jak to działa krok po kroku?
 
-### 2. Pobieranie danych (`fetch`)
+1. **Przygotowanie (Konstruktor):** Klasa potrzebuje kilku „pomocników”, aby wykonać swoją pracę (klient API do łączenia się z Google - [[GmailApiClient]], filtr do wyszukiwania - [[EmailFilter]], [[GmailMessageParser]] do czytania treści e-maila i konwerter). Są oni wstrzykiwani automatycznie przez framework [[Spring]].
+    
+2. **Główna misja (`fetch`):** To najważniejsza metoda. Przyjmuje parametr `from` (od kiedy chcemy pobrać wiadomości) i zwraca listę danych.
+    
+    - **Zapytanie:** Używa [[emailFilter]], aby przygotować odpowiednią frazę wyszukiwania (np. "znajdź maile od daty X").
+        
+    - **Pobieranie:** Używa [[GmailApiClient]], aby połączyć się z serwerami Google i ściągnąć listę wiadomości.
+        
+    - **Przetwarzanie (pętla `for`):** Kod przechodzi przez każdą pobraną wiadomość:
+        
+        - `messageParser` wyciąga z technicznego obiektu Gmaila konkretne informacje (np. treść, temat, nadawcę).
+            
+        - `emailFilter` sprawdza, czy e-mail faktycznie kwalifikuje się jako "zadanie" (task).
+            
+        - [[EmailToRawDataConverter]] zamienia tego e-maila na format [[RawData]], który jest „wspólnym językiem” w Twojej aplikacji.
+            
+    - **Obsługa błędów:** Jeśli jeden e-mail jest uszkodzony, kod go pomija (`log.error`), zamiast przerywać działanie całego programu.
+        
 
-To najważniejsza metoda. Gdy Twój program woła: _"Daj mi maile od tej daty"_, dzieje się następujący proces:
+### Kluczowe pojęcia dla nowicjusza
 
-- **Zamiana czasu:** Metoda przyjmuje `Instant` (punkt w czasie). Gmail potrzebuje jednak czasu w formacie liczbowym (sekundy od początku epoki unixowej). Kod wykonuje konwersję: `from.getEpochSecond()`.
+- **@Service:** To adnotacja [[Spring]], która mówi: „Hej, ta klasa jest ważnym komponentem, zajmij się jej tworzeniem i zarządzaniem”.
     
-- **Budowanie zapytania:** Tworzy ciąg znaków, np. `"after:1717516512"`. To standardowa składnia wyszukiwarki Gmaila.
+- **Wstrzykiwanie zależności (Dependency Injection):** Zauważ, że `GmailDataSource` nie tworzy swoich pomocników (np. `apiClient`) słowem `new`. Dostaje je „w prezencie” w konstruktorze. To dobra praktyka, bo ułatwia testowanie kodu.
     
-- **Komunikacja:** Używa `apiClient`, aby pobrać listę wiadomości.
-    
-- **Przetwarzanie (Streamy):** To bardzo elegancki fragment Javy. Zamiast pisać długą pętlę `for`, kod bierze listę surowych wiadomości z Google i za pomocą `.map(this::mapToRawData)` "przepuszcza" każdą z nich przez funkcję zmieniającą ją na format, który rozumie Twój program ([[RawData]]).
-
-### 3. Konwersja (`mapToRawData`)
-
-Twój program nie może pracować na skomplikowanych obiektach z biblioteki Google, bo stałby się od nich "uzależniony". Dlatego ta metoda wyciąga z maila tylko to, co istotne:
-
-- `message.getSnippet()` – krótki podgląd treści maila.
-    
-- `message.getId()` – unikalny numer identyfikacyjny maila.
-    
-- `message.getInternalDate()` – czas otrzymania wiadomości.
-    
-
-Z tych danych tworzy czysty obiekt [[RawData]], który jest "językiem wspólnym" Twojej aplikacji.
-### 4. Obsługa błędów (`try-catch`)
-
-Programowanie to nie tylko "szczęśliwa ścieżka", ale też sytuacje, gdy coś pójdzie nie tak (np. brak internetu). Blok `try-catch` dba o to, żeby w razie błędu:
-
-1. **Zalogować błąd** (żebyś wiedział, co się stało).
-    
-2. **Przerzucić wyjątek dalej** w czytelnej formie, aby aplikacja nie "zabiła się" bez słowa wyjaśnienia.
-### W skrócie: Jak to działa?
-
-- **Aplikacja** prosi o dane.
-    
-- [[GmailDataSource]] tłumaczy tę prośbę na język Gmaila.
-    
-- **Gmail** odpowiada surowymi danymi.
-    
-- [[GmailDataSource]] "obiera" te dane z niepotrzebnych informacji i zwraca je do Twojej aplikacji w formacie, który ona lubi ([[RawData]]).
+- **Interfejs [[DataSource]]:** Klasa implementuje ten interfejs, co oznacza, że obiecuje systemowi: „Jeśli zapytasz mnie o `fetch()` lub `getName()`, zawsze dostarczysz mi to, czego potrzebuję”. Dzięki temu w innych miejscach aplikacji można używać różnych źródeł danych (np. Outlook, Slack) tak samo jak Gmaila.
