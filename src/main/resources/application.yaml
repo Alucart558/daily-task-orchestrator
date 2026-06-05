@@ -10,6 +10,23 @@ gmail:
   scopes:
     - https://www.googleapis.com/auth/gmail.readonly
     - https://www.googleapis.com/auth/gmail.modify
+  email-fetch:
+    query-limit: 20
+    include-labels:
+      - INBOX
+      - UNREAD
+    exclude-labels: [ ]
+    task-keywords:
+      - assignment
+      - deadline
+      - due
+      - project
+      - submit
+      - quiz
+      - exam
+      - homework
+      - final
+      - presentation
 
 logging:
   level: INFO

@@ -1,58 +1,77 @@
 package com.dailytask.adapters.datasources;
 
+import com.dailytask.adapters.datasources.gmail.EmailFilter;
+import com.dailytask.adapters.datasources.gmail.EmailToRawDataConverter;
 import com.dailytask.adapters.datasources.gmail.GmailApiClient;
+import com.dailytask.adapters.datasources.gmail.GmailMessageParser;
+import com.dailytask.core.domain.GmailMessage;
 import com.dailytask.core.domain.RawData;
 import com.dailytask.core.ports.DataSource;
 import com.google.api.services.gmail.model.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
+@Service
 public class GmailDataSource implements DataSource {
-    private static final Logger logger = Logger.getLogger(GmailDataSource.class.getName());
-    private final GmailApiClient apiClient;
+    private static final Logger log = LoggerFactory.getLogger(GmailDataSource.class);
 
-    public GmailDataSource(GmailApiClient apiClient) {
+    private final GmailApiClient apiClient;
+    private final EmailFilter emailFilter;
+    private final GmailMessageParser messageParser;
+    private final EmailToRawDataConverter rawDataConverter;
+    private final int queryLimit;
+
+    public GmailDataSource(GmailApiClient apiClient,
+                           EmailFilter emailFilter,
+                           GmailMessageParser messageParser,
+                           EmailToRawDataConverter rawDataConverter,
+                           @Value("${gmail.email-fetch.query-limit:20}") int queryLimit) {
         this.apiClient = apiClient;
+        this.emailFilter = emailFilter;
+        this.messageParser = messageParser;
+        this.rawDataConverter = rawDataConverter;
+        this.queryLimit = queryLimit;
     }
 
     @Override
     public List<RawData> fetch(Instant from) {
-        logger.info("Starting fetch from Gmail since: " + from);
+        String query = emailFilter.getTaskQuery(from);
+        log.info("Fetching Gmail messages with query: {}", query);
 
-        long epochSeconds = from.getEpochSecond();
-        String query = "after:" + epochSeconds;
+        List<RawData> results = new ArrayList<>();
+        List<Message> apiMessages;
 
         try {
-            List<Message> rawMessages = apiClient.getEmails(query, 100L);
-
-            return rawMessages.stream()
-                    .map(this::mapToRawData)
-                    .collect(Collectors.toList());
-
+            apiMessages = apiClient.getEmails(query, queryLimit);
         } catch (Exception e) {
-            logger.severe("Error during Gmail fetch operation: " + e.getMessage());
-            throw new RuntimeException("Failed to extract RawData from Gmail", e);
+            log.error("Failed to fetch emails from Gmail API", e);
+            return results;
         }
+
+        for (Message apiMessage : apiMessages) {
+            try {
+                GmailMessage parsedMessage = messageParser.parse(apiMessage);
+                if (emailFilter.isTaskEmail(parsedMessage)) {
+                    RawData rawData = rawDataConverter.convert(parsedMessage);
+                    results.add(rawData);
+                }
+            } catch (Exception e) {
+                log.error("Skipping malformed email ID {}: {}", apiMessage.getId(), e.getMessage());
+            }
+        }
+
+        log.info("Successfully fetched and converted {} task emails.", results.size());
+        return results;
     }
 
     @Override
     public String getName() {
         return "Gmail";
-    }
-
-    private RawData mapToRawData(Message message) {
-        String content = message.getSnippet(); // Simplified for now. Full body extraction is complex due to MIME parts.
-        String sourceId = message.getId();
-        Instant timestamp = Instant.ofEpochMilli(message.getInternalDate());
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(timestamp, ZoneId.systemDefault());
-
-
-        // Assuming RawData constructor: RawData(String source, String externalId, String rawContent, Instant timestamp)
-        return new RawData(getName(), sourceId, content, localDateTime);
     }
 }

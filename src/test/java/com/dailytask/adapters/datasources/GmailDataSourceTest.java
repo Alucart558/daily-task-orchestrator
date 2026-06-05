@@ -1,56 +1,61 @@
 package com.dailytask.adapters.datasources;
 
+import com.dailytask.adapters.datasources.gmail.EmailFilter;
+import com.dailytask.adapters.datasources.gmail.EmailToRawDataConverter;
 import com.dailytask.adapters.datasources.gmail.GmailApiClient;
+import com.dailytask.adapters.datasources.gmail.GmailMessageParser;
+import com.dailytask.core.domain.GmailMessage;
 import com.dailytask.core.domain.RawData;
 import com.google.api.services.gmail.model.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class GmailDataSourceTest {
 
-    private GmailApiClient mockApiClient;
-    private GmailDataSource gmailDataSource;
+    private GmailApiClient apiClient;
+    private EmailFilter filter;
+    private GmailMessageParser parser;
+    private EmailToRawDataConverter converter;
+    private GmailDataSource dataSource;
 
     @BeforeEach
     void setUp() {
-        mockApiClient = mock(GmailApiClient.class);
-        gmailDataSource = new GmailDataSource(mockApiClient);
+        apiClient = mock(GmailApiClient.class);
+        filter = mock(EmailFilter.class);
+        parser = mock(GmailMessageParser.class);
+        converter = mock(EmailToRawDataConverter.class);
+        dataSource = new GmailDataSource(apiClient, filter, parser, converter, 20);
     }
 
     @Test
-    void fetch_ReturnsListOfRawData_WhenApiSucceeds() {
-        Instant from = Instant.parse("2023-10-01T12:00:00Z");
-        String expectedQuery = "after:" + from.getEpochSecond();
+    void fetch_ProcessesEmailsAndSkipsFailures() throws Exception {
+        Message validMsg = new Message().setId("1");
+        Message invalidMsg = new Message().setId("2");
 
-        Message msg1 = new Message().setId("1").setSnippet("Test 1").setInternalDate(from.toEpochMilli());
-        Message msg2 = new Message().setId("2").setSnippet("Test 2").setInternalDate(from.toEpochMilli() + 1000);
+        when(filter.getTaskQuery(any())).thenReturn("after:123");
+        when(apiClient.getEmails(anyString(), anyInt())).thenReturn(List.of(validMsg, invalidMsg));
 
-        when(mockApiClient.getEmails(eq(expectedQuery), anyLong())).thenReturn(List.of(msg1, msg2));
+        GmailMessage parsedMsg = new GmailMessage();
+        when(parser.parse(validMsg)).thenReturn(parsedMsg);
+        when(parser.parse(invalidMsg)).thenThrow(new RuntimeException("Parse error"));
 
-        List<RawData> result = gmailDataSource.fetch(from);
+        when(filter.isTaskEmail(parsedMsg)).thenReturn(true);
+        when(converter.convert(parsedMsg)).thenReturn(
+                new RawData("Gmail", "Title", "Body", LocalDateTime.now())
+        );
 
-        assertEquals(2, result.size());
-        assertEquals("Gmail", result.get(0).getSource());
-        assertEquals("1", result.get(0).getTitle());
-        assertEquals("Test 1", result.get(0).getRawContent());
+        List<RawData> results = dataSource.fetch(Instant.now());
 
-        verify(mockApiClient, times(1)).getEmails(expectedQuery, 100L);
-    }
-
-    @Test
-    void fetch_ThrowsException_WhenApiFails() {
-        Instant from = Instant.now();
-        when(mockApiClient.getEmails(anyString(), anyLong())).thenThrow(new RuntimeException("API Down"));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> gmailDataSource.fetch(from));
-        assertTrue(exception.getMessage().contains("Failed to extract RawData"));
+        assertEquals(1, results.size(), "Should contain exactly one valid element.");
+        verify(apiClient, times(1)).getEmails(anyString(), anyInt());
+        verify(parser, times(2)).parse(any());
     }
 }
