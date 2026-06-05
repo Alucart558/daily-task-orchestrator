@@ -9,8 +9,8 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>2.0.9</slf4j.version>
         <logback.version>1.4.11</logback.version>
@@ -20,10 +20,10 @@
         <google.api.client.version>1.35.2</google.api.client.version>
         <google.oauth.client.jetty.version>1.34.1</google.oauth.client.jetty.version>
         <google.api.services.gmail.version>v1-rev20240520-2.0.0</google.api.services.gmail.version>
+        <spring.boot.version>3.2.5</spring.boot.version>
     </properties>
 
     <dependencies>
-        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -35,7 +35,6 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- Google APIs -->
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
@@ -52,7 +51,6 @@
             <version>${google.oauth.client.jetty.version}</version>
         </dependency>
 
-        <!-- JSON and YAML Processing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -64,7 +62,12 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -83,18 +86,6 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- Optional Future Dependencies -->
-        <!-- <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.11.0</version>
-        </dependency> -->
-        <!-- <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.16.1</version>
-        </dependency> -->
     </dependencies>
 
     <build>

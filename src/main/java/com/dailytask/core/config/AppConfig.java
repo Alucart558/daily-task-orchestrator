@@ -2,6 +2,9 @@ package com.dailytask.core.config;
 
 import com.dailytask.adapters.analyzers.ClaudeTasksSummarizer;
 import com.dailytask.adapters.datasources.GmailDataSource;
+import com.dailytask.adapters.datasources.gmail.EmailFilter;
+import com.dailytask.adapters.datasources.gmail.EmailToRawDataConverter;
+import com.dailytask.adapters.datasources.gmail.GmailMessageParser;
 import com.dailytask.adapters.notifiers.EmailTaskNotifier;
 import com.dailytask.core.ports.DataSource;
 import com.dailytask.core.ports.TaskSummarizer;
@@ -41,8 +44,15 @@ public class AppConfig {
         GmailOAuth2Handler authHandler = new GmailOAuth2Handler(config, httpTransport);
         GmailApiClient apiClient = new GmailApiClient(authHandler, httpTransport);
 
-        // 4. Wstrzyknij gotowego klienta do adaptera i go zwróć
-        return List.of(new GmailDataSource(apiClient));
+        // 4. Zainicjalizuj nowe komponenty do parsowania i filtrowania maili
+        List<String> taskKeywords = List.of("assignment", "deadline", "due", "project", "submit", "quiz", "exam", "homework", "final", "presentation");
+        EmailFilter emailFilter = new EmailFilter(taskKeywords);
+        GmailMessageParser messageParser = new GmailMessageParser();
+        EmailToRawDataConverter rawDataConverter = new EmailToRawDataConverter();
+        int queryLimit = 20;
+
+        // 5. Wstrzyknij wszystkie 5 zależności do adaptera i go zwróć
+        return List.of(new GmailDataSource(apiClient, emailFilter, messageParser, rawDataConverter, queryLimit));
     }
 
     public static TaskSummarizer createAnalyzer() {
